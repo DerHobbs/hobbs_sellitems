@@ -4,7 +4,7 @@ This script enables players to interact with NPCs to sell various items. You can
 
 ## Features
 
-- **NPC Interaction:** Allows players to sell items to designated NPCs in the game world.
+- **NPC Interaction:** Allows players to sell items.
 - **Dynamic Pricing:** Item prices are set within a configurable range and reset at specified intervals.
 - **Customizable NPCs:** Easily configure NPC models, positions, animations, and map blips.
 - **Secure Transactions:** Server-side checks prevent exploitation by validating item quantities before sale.
