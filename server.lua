@@ -49,6 +49,7 @@ AddEventHandler('npc:checkPlayerJob', function(npcName)
     local npcConfig = Config.NPCs[npcName]
 
     local playerJob = Player.PlayerData.job.name
+    local playerGang = Player.PlayerData.gang.name
 
     -- Check if the NPC has a required job and grade
     if npcConfig.requiredJob and npcConfig.requiredJob ~= false then
@@ -63,8 +64,25 @@ AddEventHandler('npc:checkPlayerJob', function(npcName)
             })
             return
         end
-    elseif npcConfig.blacklistedJobs then
-        -- Check if the player's job is blacklisted
+    end
+
+    -- Check if the NPC has a required gang and grade
+    if npcConfig.requiredGang and npcConfig.requiredGang ~= false then
+        local playerGangGrade = Player.PlayerData.gang.grade.level
+
+        -- Check if the player's gang matches and if the player's gang grade is equal or higher
+        if playerGang ~= npcConfig.requiredGang.name or playerGangGrade < npcConfig.requiredGang.grade then
+            TriggerClientEvent('ox_lib:notify', src, {
+                title = Config.Texts.AccessDeniedGangTitle,
+                description = Config.Texts.AccessDeniedGangDescription,
+                type = 'error'
+            })
+            return
+        end
+    end
+
+    -- Check if the player's job is blacklisted
+    if npcConfig.blacklistedJobs then
         for _, blacklistedJob in ipairs(npcConfig.blacklistedJobs) do
             if playerJob == blacklistedJob then
                 TriggerClientEvent('ox_lib:notify', src, {
@@ -77,7 +95,7 @@ AddEventHandler('npc:checkPlayerJob', function(npcName)
         end
     end
 
-    -- If no job is required, and the player is not blacklisted, allow access
+    -- If no job or gang is required, and the player is not blacklisted, allow access
     TriggerClientEvent('npc:allowOpenSellMenu', src, npcName)
 end)
 

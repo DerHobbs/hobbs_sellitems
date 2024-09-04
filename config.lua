@@ -9,6 +9,7 @@ Config.NPCs = {
         -- If only a specific job is to have access, example example { name = farmer, grade = 1 },
         -- if everyone should have access then false
         requiredJob = false, -- Jobs the NPC won't talk to if they don't need it then false.
+        requiredGang = { name = "ballas", grade = 0 }, -- Gangs the NPC won't talk to if they don't need it then false.
         blacklistedJobs = { "police", "sheriff" },  -- Keine ausgeschlossenen Jobs
         sellItems = {--Item to sell
             { item = "sandwich", minPrice = 1, maxPrice = 3, label = "Sandwich", price = 0 },
@@ -31,6 +32,7 @@ Config.NPCs = {
         position = vector3(-298.92, -1376.14, 41.17),
         heading = 180.0,
         requiredJob = { name = "autoexotic", grade = 1 },
+        requiredGang = false,
         blacklistedJobs = false,
         sellItems = {
             { item = "gold_coin", minPrice = 50, maxPrice = 100, label = "Golden Coin", price = 0 },
@@ -72,4 +74,6 @@ Config.Texts = {  -- Texts used for menu and notifications
     AccessDeniedDescription = "You don't have the required job or rank to interact with this NPC.",
     BlacklistedJobTitle = "I have nothing to say to you",
     BlacklistedJobDescription = "I have nothing to say to you, you cops!",
+    AccessDeniedGangTitle = "Access Denied",
+    AccessDeniedGangDescription = "You don't have the required gang or rank to interact with this NPC.",
 }
