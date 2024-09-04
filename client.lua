@@ -68,7 +68,7 @@ function CreateNPC(npcConfig)
     exports.ox_target:addLocalEntity(npc, {
         {
             name = 'npc_sell_items_' .. npcConfig.name,
-            label = Config.Texts.TargetMenuTitle,
+            label = locale('TargetMenuTitle'),
             icon = 'fa-solid fa-sack-dollar',
             onSelect = function()
                 OpenSellMenu(npcConfig, npc)
@@ -125,7 +125,7 @@ AddEventHandler('npc:openSellMenu', function(npcName, sellItems)
     local hasSellableItems = false
 
     table.insert(options, {
-        title = Config.Texts.MenuHeader,
+        title = locale('MenuHeader'),
         description = "",
         icon = 'fa-solid fa-info-circle',
         disabled = true
@@ -142,7 +142,7 @@ AddEventHandler('npc:openSellMenu', function(npcName, sellItems)
 
         table.insert(options, {
             title = itemLabel .. ' (' .. playerItemCount .. 'x)',
-            description = Config.Texts.CurrentPrice .. price,
+            description = locale('CurrentPrice .. price'),
             icon = 'nui://ox_inventory/web/images/' .. item.name .. '.png',
             disabled = playerItemCount == 0,
             onSelect = function()
@@ -152,10 +152,10 @@ AddEventHandler('npc:openSellMenu', function(npcName, sellItems)
                         TriggerServerEvent('npc:requestSellMenu', npcName)
                     end)
                 else
-                    local input = lib.inputDialog(Config.Texts.QuantityPrompt, {
+                    local input = lib.inputDialog(locale('QuantityPrompt'), {
                         {
                             type = 'slider',
-                            label = Config.Texts.QuantityPrompt,
+                            label = locale('QuantityPrompt'),
                             min = 1,
                             max = playerItemCount,
                             default = playerItemCount
@@ -171,7 +171,7 @@ AddEventHandler('npc:openSellMenu', function(npcName, sellItems)
                             end)
                         else
                             lib.notify({
-                                title = Config.Texts.InvalidAmount,
+                                title = locale('InvalidAmount'),
                                 type = 'error',
                             })
                         end
@@ -184,14 +184,14 @@ AddEventHandler('npc:openSellMenu', function(npcName, sellItems)
     end
 
     table.insert(options, 2, {
-        title = Config.Texts.SellAllTitle,
-        description = Config.Texts.SellAllDescription,
+        title = locale('SellAllTitle'),
+        description = locale('SellAllDescription'),
         icon = 'nui://ox_inventory/web/images/money.png',
         disabled = not hasSellableItems,
         onSelect = function()
             local confirmOptions = {
                 {
-                    title = Config.Texts.ConfirmSellYes,
+                    title = locale('ConfirmSellYes'),
                     icon = 'fa-solid fa-check',
                     onSelect = function()
                         TriggerServerEvent('npc:sellAllItems', npcName)
@@ -199,11 +199,11 @@ AddEventHandler('npc:openSellMenu', function(npcName, sellItems)
                     end
                 },
                 {
-                    title = Config.Texts.ConfirmSellNo,
+                    title = locale('ConfirmSellNo'),
                     icon = 'fa-solid fa-times',
                     onSelect = function()
                         lib.notify({
-                            title = Config.Texts.SellCancelled,
+                            title = locale('SellCancelled'),
                             type = 'error',
                         })
                         CloseMenuAndDisableCamera()
@@ -213,7 +213,7 @@ AddEventHandler('npc:openSellMenu', function(npcName, sellItems)
 
             lib.registerContext({
                 id = 'confirm_sell_all',
-                title = Config.Texts.ConfirmSellTitle,
+                title = locale('ConfirmSellTitle'),
                 options = confirmOptions,
                 onExit = function()
                     CloseMenuAndDisableCamera()
@@ -226,7 +226,7 @@ AddEventHandler('npc:openSellMenu', function(npcName, sellItems)
 
     lib.registerContext({
         id = 'sell_items_menu_' .. npcName,
-        title = Config.Texts.ContextMenuTitle,
+        title = locale('ContextMenuTitle'),
         options = options,
         onExit = function()
             CloseMenuAndDisableCamera()
