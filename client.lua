@@ -1,6 +1,7 @@
 local npcs = {}
 local cam = nil  -- Camera variable
 local isCheckingDeath = false  -- To track if the death check loop is active
+local isCameraFocused = false  -- Tracks if the camera is focused on the NPC
 
 -- Closes the menu and disables the camera
 function CloseMenuAndDisableCamera()
@@ -13,6 +14,7 @@ function CloseMenuAndDisableCamera()
     DisableCamera()
     -- Stop the death check loop
     isCheckingDeath = false
+    isCameraFocused = false
 end
 
 -- Starts the loop to check if the player is dead or dying
@@ -197,7 +199,11 @@ end
 
 -- Opens the sell menu and activates the camera on the NPC
 function OpenSellMenu(npcConfig, npc)
-    FocusOnNPC(npc)
+    -- Only focus the camera on the NPC if it hasn't been focused yet
+    if not isCameraFocused then
+        FocusOnNPC(npc)
+        isCameraFocused = true  -- Mark the camera as focused
+    end
     NPCSpeak(npc)
     StartDeathCheck()
 
