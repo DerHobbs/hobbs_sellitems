@@ -111,7 +111,7 @@ AddEventHandler('npc:sellItem', function(itemName, amount, npcName)
     local npcConfig = Config.NPCs[npcName]
     if not npcConfig then
         TriggerClientEvent('ox_lib:notify', src, {
-            title = Config.Texts.SellErrorTitle,
+            title = locale('SellErrorTitle'),
             description = "Invalid NPC.",
             type = 'error'
         })
@@ -130,7 +130,7 @@ AddEventHandler('npc:sellItem', function(itemName, amount, npcName)
     -- Check if itemConfig is valid
     if not itemConfig then
         TriggerClientEvent('ox_lib:notify', src, {
-            title = Config.Texts.SellErrorTitle,
+            title = locale('SellErrorTitle'),
             description = "Item not found in NPC configuration.",
             type = 'error'
         })
@@ -141,7 +141,7 @@ AddEventHandler('npc:sellItem', function(itemName, amount, npcName)
     local pricePerItem = GetItemPrice(npcName, itemName)
     if not pricePerItem then
         TriggerClientEvent('ox_lib:notify', src, {
-            title = Config.Texts.SellErrorTitle,
+            title = locale('SellErrorTitle'),
             description = "Item not allowed for sale.",
             type = 'error'
         })
@@ -152,8 +152,8 @@ AddEventHandler('npc:sellItem', function(itemName, amount, npcName)
     local itemCount = exports.ox_inventory:GetItem(src, itemName, nil, true)
     if not itemCount or itemCount < amount then
         TriggerClientEvent('ox_lib:notify', src, {
-            title = Config.Texts.SellErrorTitle,
-            description = Config.Texts.NotEnoughItems,
+            title = locale('SellErrorTitle'),
+            description = locale('NotEnoughItems'),
             type = 'error'
         })
         return
@@ -167,8 +167,8 @@ AddEventHandler('npc:sellItem', function(itemName, amount, npcName)
         Player.Functions.AddMoney('cash', totalSellPrice)
 
         TriggerClientEvent('ox_lib:notify', src, {
-            title = Config.Texts.SellSuccessTitle,
-            description = Config.Texts.SellSuccessMessage:format(amount, itemConfig.label, totalSellPrice),  -- Use itemConfig.label
+            title = locale('SellSuccessTitle'),
+            description = locale('SellSuccessMessage:format(amount, itemConfig.label, totalSellPrice'),  -- Use itemConfig.label
             type = 'success'
         })
 
@@ -179,8 +179,8 @@ AddEventHandler('npc:sellItem', function(itemName, amount, npcName)
         sendToDiscord(playerName, src, itemList, npcName, totalSellPrice)
     else
         TriggerClientEvent('ox_lib:notify', src, {
-            title = Config.Texts.SellErrorTitle,
-            description = Config.Texts.SellErrorMessage,
+            title = locale('SellErrorTitle'),
+            description = locale('SellErrorMessage'),
             type = 'error'
         })
     end
@@ -196,7 +196,7 @@ AddEventHandler('npc:sellAllItems', function(npcName)
     local npcConfig = Config.NPCs[npcName]
     if not npcConfig then
         TriggerClientEvent('ox_lib:notify', src, {
-            title = Config.Texts.SellErrorTitle,
+            title = locale('SellErrorTitle'),
             description = "Invalid NPC.",
             type = 'error'
         })
@@ -228,16 +228,16 @@ AddEventHandler('npc:sellAllItems', function(npcName)
         Player.Functions.AddMoney('cash', totalSellPrice)
 
         TriggerClientEvent('ox_lib:notify', src, {
-            title = Config.Texts.SellSuccessTitle,
-            description = Config.Texts.SuccessSellAll,
+            title = locale('SellSuccessTitle'),
+            description = locale('SuccessSellAll'),
             type = 'success'
         })
 
         sendToDiscord(playerName, src, itemList, npcName, totalSellPrice)
     else
         TriggerClientEvent('ox_lib:notify', src, {
-            title = Config.Texts.SellErrorTitle,
-            description = Config.Texts.NoItemsToSell,
+            title = locale('SellErrorTitle'),
+            description = locale('NoItemsToSell'),
             type = 'error'
         })
     end
