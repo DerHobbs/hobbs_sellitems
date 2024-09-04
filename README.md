@@ -1,7 +1,7 @@
 # NPC Item Selling Script
 
 This script enables players to interact with NPCs to sell various items. You can place NPCs at specific locations, customize their animations, set dynamic prices, and ensure secure transactions.
-
+https://streamable.com/drfbfy
 ## Features
 
 - **NPC Interaction:** Allows players to sell items.
