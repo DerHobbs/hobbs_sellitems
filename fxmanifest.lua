@@ -6,6 +6,11 @@ description 'Items sales script'
 
 lua54 'yes'
 
+ox_lib 'locale'
+files {
+  'locales/*.json'
+}
+
 shared_scripts {
   'config.lua',
   '@ox_lib/init.lua'
