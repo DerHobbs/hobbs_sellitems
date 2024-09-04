@@ -11,6 +11,8 @@ https://streamable.com/drfbfy
 - **Camera Focus:** Smooth camera transition to focus on the NPC during interactions.
 - **Sell All Option:** Players can sell all available items in a single transaction.
 - **User Feedback:** Notifications inform players of successful or failed transactions.
+- **Job and Gang Restrictions: NPCs can be configured to only interact with players who have certain jobs or are part of specific gangs, including grade requirements.**
+- **Blacklist Jobs: NPCs can be configured to refuse interaction with players in specific jobs (e.g., police), displaying custom messages when approached by blacklisted players.**
 
 ## Requirements
 
