@@ -1,7 +1,7 @@
 Config = {}
 
 Config.NPCs = {
-    {
+    Farmer = {  -- NPC configuration for Farmer
         name = "Farmer",
         model = "a_m_m_farmer_01",
         position = vector3(2418.80, 4992.06, 46.21),
@@ -9,20 +9,19 @@ Config.NPCs = {
         sellItems = {
             { item = "sandwich", minPrice = 1, maxPrice = 3, label = "Sandwich", price = 0 },
             { item = "rolex", minPrice = 50, maxPrice = 100, label = "Golden Watch", price = 0 },
-            -- Add more items here
         },
-        blip = {
+        blip = {  -- Blip configuration for map icon
             enabled = true,
-            blipId = 1,  -- Blip Icon
-            color = 2,  -- Blip color
-            scale = 1.0,  -- Blip size
-            name = "Farmer Market"  -- Blip name
+            blipId = 1,
+            color = 2,
+            scale = 1.0,
+            name = "Farmer Market"
         },
-        priceResetInterval = 2 * 60 * 60,  -- Price reset interval: every 2 hours (in seconds)
-        interactionDistance = 50.0,  -- Distance in meters for NPC spawn/despawn
-        animation = "WORLD_HUMAN_CLIPBOARD"  -- Animation scenario
+        priceResetInterval = 2 * 60 * 60,  -- Prices reset every 2 hours
+        interactionDistance = 50.0,  -- Distance for NPC interaction
+        animation = "WORLD_HUMAN_CLIPBOARD"
     },
-    {
+    ElectronicsVendor = {  -- NPC configuration for Electronics Vendor
         name = "ElectronicsVendor",
         model = "a_m_y_business_02",
         position = vector3(-298.92, -1376.14, 41.17),
@@ -30,23 +29,21 @@ Config.NPCs = {
         sellItems = {
             { item = "gold_coin", minPrice = 50, maxPrice = 100, label = "Golden Coin", price = 0 },
             { item = "blueprint_ruston", minPrice = 300, maxPrice = 500, label = "Ruston Blueprint", price = 0 },
-            -- Add more items here
         },
-        blip = {
+        blip = {  -- Blip configuration for map icon
             enabled = true,
-            blipId = 459,  -- Blip Icon
-            color = 3,  -- Blip color
-            scale = 1.2,  -- Blip size
-            name = "Electronics Vendor"  -- Blip name
+            blipId = 459,
+            color = 3,
+            scale = 1.2,
+            name = "Electronics Vendor"
         },
-        priceResetInterval = 3 * 60 * 60,  -- Price reset interval: every 3 hours (in seconds)
-        interactionDistance = 50.0,  -- Distance in meters for NPC spawn/despawn
-        animation = "WORLD_HUMAN_CLIPBOARD"  -- Animation scenario
+        priceResetInterval = 3 * 60 * 60,  -- Prices reset every 3 hours
+        interactionDistance = 50.0,
+        animation = "WORLD_HUMAN_CLIPBOARD"
     }
-    -- Add more NPCs here
 }
 
-Config.Texts = {
+Config.Texts = {  -- Texts used for menu and notifications
     TargetMenuTitle = "Sell Items",
     ContextMenuTitle = "Sell Menu",
     SellAllTitle = "Sell All Available Items?",

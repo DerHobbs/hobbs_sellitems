@@ -1,75 +1,45 @@
 local npcs = {}
-local cam = nil  -- Camera variable
-local isCheckingDeath = false  -- To track if the death check loop is active
-local isCameraFocused = false  -- Tracks if the camera is focused on the NPC
+local cam = nil
+local isCheckingDeath = false
+local isCameraFocused = false
 
--- Closes the menu and disables the camera
+-- Close the menu and disable the camera
 function CloseMenuAndDisableCamera()
-    -- Close the menu if it's open
     local openMenu = lib.getOpenContextMenu()
     if openMenu then
         lib.hideContext()
     end
-    -- Disable the camera if active
     DisableCamera()
-    -- Stop the death check loop
     isCheckingDeath = false
     isCameraFocused = false
 end
 
--- Starts the loop to check if the player is dead or dying
+-- Start checking if the player is dead or dying
 function StartDeathCheck()
     if not isCheckingDeath then
         isCheckingDeath = true
         Citizen.CreateThread(function()
             while isCheckingDeath do
                 local playerPed = PlayerPedId()
-
-                -- Check if the player is dead or dying
                 if IsPedDeadOrDying(playerPed, true) then
-                    CloseMenuAndDisableCamera()  -- Close the menu and disable the camera
+                    CloseMenuAndDisableCamera()
                     break
                 end
-                Wait(1000)  -- Check every 1 second
+                Wait(1000)
             end
         end)
     end
 end
 
--- Sets item prices for an NPC
-function SetItemPrices(npcConfig)
-    for _, itemConfig in pairs(npcConfig.sellItems) do
-        if not itemConfig.price or itemConfig.price == 0 then
-            itemConfig.price = math.random(itemConfig.minPrice, itemConfig.maxPrice)
-        end
-    end
-end
-
--- Resets prices after a specified interval
-function ResetPricesPeriodically(npcConfig)
-    Citizen.CreateThread(function()
-        while true do
-            Wait(npcConfig.priceResetInterval * 1000)
-            SetItemPrices(npcConfig)
-        end
-    end)
-end
-
--- Sets the NPC animation based on the configuration
+-- Set NPC animation based on configuration
 function SetNPCAnimation(npc, animation)
     if animation then
         TaskStartScenarioInPlace(npc, animation, 0, true)
     end
 end
 
--- Creates an NPC
+-- Create an NPC with a blip and interaction options
 function CreateNPC(npcConfig)
-    SetItemPrices(npcConfig)
-
-    if npcConfig.priceResetInterval and npcConfig.priceResetInterval > 0 then
-        ResetPricesPeriodically(npcConfig)
-    end
-
     if npcConfig.blip.enabled then
         local blip = AddBlipForCoord(npcConfig.position.x, npcConfig.position.y, npcConfig.position.z)
         SetBlipSprite(blip, npcConfig.blip.blipId)
@@ -93,7 +63,6 @@ function CreateNPC(npcConfig)
     SetEntityInvincible(npc, true)
     SetBlockingOfNonTemporaryEvents(npc, true)
 
-    -- Perform the configured animation
     SetNPCAnimation(npc, npcConfig.animation)
 
     exports.ox_target:addLocalEntity(npc, {
@@ -110,7 +79,7 @@ function CreateNPC(npcConfig)
     npcs[npcConfig.name] = npc
 end
 
--- Deletes an NPC
+-- Delete an NPC
 function DeleteNPC(npcConfig)
     if npcs[npcConfig.name] then
         DeleteEntity(npcs[npcConfig.name])
@@ -118,7 +87,7 @@ function DeleteNPC(npcConfig)
     end
 end
 
--- Monitors player distance to NPCs and spawns/despawns NPCs accordingly
+-- Monitor player distance to NPCs and manage NPC spawn/despawn
 Citizen.CreateThread(function()
     while true do
         local playerPed = PlayerPedId()
@@ -138,75 +107,20 @@ Citizen.CreateThread(function()
     end
 end)
 
--- Focuses the camera on the NPC with a smooth transition from the player
-function FocusOnNPC(npc)
-    local playerPed = PlayerPedId()
-    local playerCoords = GetEntityCoords(playerPed)
-    local x, y, z = table.unpack(GetEntityCoords(npc))
-    local heading = GetEntityHeading(npc)
-
-    -- Calculate the position in front of the NPC
-    local frontX = x - 1.0 * math.sin(math.rad(heading))
-    local frontY = y + 1.0 * math.cos(math.rad(heading))
-    local camZ = z + 0.7
-
-    -- Create the camera
-    cam = CreateCam("DEFAULT_SCRIPTED_CAMERA", true)
-
-    -- Initial camera position at the player's position
-    SetCamCoord(cam, playerCoords.x, playerCoords.y, playerCoords.z + 0.7)
-    PointCamAtCoord(cam, x, y, z + 0.65)
-
-    -- Activate the camera
-    SetCamActive(cam, true)
-    RenderScriptCams(true, false, 0, true, false)
-
-    -- Smooth transition to the NPC position
-    local duration = 500 -- Duration of the transition in milliseconds
-    local startTime = GetGameTimer()
-
-    while GetGameTimer() - startTime < duration do
-        local progress = (GetGameTimer() - startTime) / duration
-
-        -- Calculate the new camera position based on progress
-        local newX = playerCoords.x + (frontX - playerCoords.x) * progress
-        local newY = playerCoords.y + (frontY - playerCoords.y) * progress
-        local newZ = playerCoords.z + 0.7 + (camZ - (playerCoords.z + 0.7)) * progress
-
-        -- Set the new camera position
-        SetCamCoord(cam, newX, newY, newZ)
-        Wait(0)
-    end
-
-    -- Set the final camera position and rotation
-    SetCamCoord(cam, frontX, frontY, camZ)
-    PointCamAtCoord(cam, x, y, z + 0.65)
-end
-
--- Disables the camera
-function DisableCamera()
-    if cam then
-        DestroyCam(cam, false)
-        RenderScriptCams(false, false, 0, true, false)
-        cam = nil
-    end
-end
-
--- NPC says a generic greeting
-function NPCSpeak(npc)
-    PlayAmbientSpeech1(npc, "GENERIC_HI", "SPEECH_PARAMS_FORCE")
-end
-
--- Opens the sell menu and activates the camera on the NPC
+-- Open the sell menu and focus the camera on the NPC
 function OpenSellMenu(npcConfig, npc)
-    -- Only focus the camera on the NPC if it hasn't been focused yet
     if not isCameraFocused then
         FocusOnNPC(npc)
-        isCameraFocused = true  -- Mark the camera as focused
+        isCameraFocused = true
     end
     NPCSpeak(npc)
     StartDeathCheck()
 
+    TriggerServerEvent('npc:requestSellMenu', npcConfig.name)
+end
+
+RegisterNetEvent('npc:openSellMenu')
+AddEventHandler('npc:openSellMenu', function(npcName, sellItems)
     local options = {}
     local hasSellableItems = false
 
@@ -217,10 +131,10 @@ function OpenSellMenu(npcConfig, npc)
         disabled = true
     })
 
-    for _, itemConfig in pairs(npcConfig.sellItems) do
-        local itemLabel = itemConfig.label
-        local price = itemConfig.price
-        local playerItemCount = exports.ox_inventory:GetItemCount(itemConfig.item)
+    for _, item in pairs(sellItems) do
+        local itemLabel = item.label
+        local price = item.price
+        local playerItemCount = exports.ox_inventory:GetItemCount(item.name)
 
         if playerItemCount > 0 then
             hasSellableItems = true
@@ -229,13 +143,41 @@ function OpenSellMenu(npcConfig, npc)
         table.insert(options, {
             title = itemLabel .. ' (' .. playerItemCount .. 'x)',
             description = Config.Texts.CurrentPrice .. price,
-            icon = 'nui://ox_inventory/web/images/' .. itemConfig.item .. '.png',
+            icon = 'nui://ox_inventory/web/images/' .. item.name .. '.png',
             disabled = playerItemCount == 0,
             onSelect = function()
                 if playerItemCount == 1 then
-                    SellItem(itemConfig.item, price, 1, npcConfig, npc, false)
+                    TriggerServerEvent('npc:sellItem', item.name, 1, npcName)
+                    SetTimeout(100, function()
+                        TriggerServerEvent('npc:requestSellMenu', npcName)
+                    end)
                 else
-                    SellItem(itemConfig.item, price, playerItemCount, npcConfig, npc, false)
+                    local input = lib.inputDialog(Config.Texts.QuantityPrompt, {
+                        {
+                            type = 'slider',
+                            label = Config.Texts.QuantityPrompt,
+                            min = 1,
+                            max = playerItemCount,
+                            default = playerItemCount
+                        }
+                    })
+
+                    if input then
+                        local amountToSell = tonumber(input[1])
+                        if amountToSell and amountToSell > 0 and amountToSell <= playerItemCount then
+                            TriggerServerEvent('npc:sellItem', item.name, amountToSell, npcName)
+                            SetTimeout(100, function()
+                                TriggerServerEvent('npc:requestSellMenu', npcName)
+                            end)
+                        else
+                            lib.notify({
+                                title = Config.Texts.InvalidAmount,
+                                type = 'error',
+                            })
+                        end
+                    else
+                        TriggerServerEvent('npc:requestSellMenu', npcName)
+                    end
                 end
             end
         })
@@ -247,12 +189,43 @@ function OpenSellMenu(npcConfig, npc)
         icon = 'nui://ox_inventory/web/images/money.png',
         disabled = not hasSellableItems,
         onSelect = function()
-            ConfirmSellAllItems(npcConfig, npc)
+            local confirmOptions = {
+                {
+                    title = Config.Texts.ConfirmSellYes,
+                    icon = 'fa-solid fa-check',
+                    onSelect = function()
+                        TriggerServerEvent('npc:sellAllItems', npcName)
+                        CloseMenuAndDisableCamera()
+                    end
+                },
+                {
+                    title = Config.Texts.ConfirmSellNo,
+                    icon = 'fa-solid fa-times',
+                    onSelect = function()
+                        lib.notify({
+                            title = Config.Texts.SellCancelled,
+                            type = 'error',
+                        })
+                        CloseMenuAndDisableCamera()
+                    end
+                }
+            }
+
+            lib.registerContext({
+                id = 'confirm_sell_all',
+                title = Config.Texts.ConfirmSellTitle,
+                options = confirmOptions,
+                onExit = function()
+                    CloseMenuAndDisableCamera()
+                end
+            })
+
+            lib.showContext('confirm_sell_all')
         end
     })
 
     lib.registerContext({
-        id = 'sell_items_menu_' .. npcConfig.name,
+        id = 'sell_items_menu_' .. npcName,
         title = Config.Texts.ContextMenuTitle,
         options = options,
         onExit = function()
@@ -260,99 +233,53 @@ function OpenSellMenu(npcConfig, npc)
         end
     })
 
-    lib.showContext('sell_items_menu_' .. npcConfig.name)
-end
+    lib.showContext('sell_items_menu_' .. npcName)
+end)
 
--- Confirms selling all items in a dialog
-function ConfirmSellAllItems(npcConfig)
-    local options = {
-        {
-            title = Config.Texts.ConfirmSellYes,
-            icon = 'fa-solid fa-check',
-            onSelect = function()
-                SellAllItems(npcConfig)
-            end
-        },
-        {
-            title = Config.Texts.ConfirmSellNo,
-            icon = 'fa-solid fa-times',
-            onSelect = function()
-                lib.notify({
-                    title = Config.Texts.SellCancelled,
-                    type = 'error',
-                })
-            end
-        }
-    }
-
-    lib.registerContext({
-        id = 'confirm_sell_all',
-        title = Config.Texts.ConfirmSellTitle,
-        options = options
-    })
-
-    lib.showContext('confirm_sell_all')
-end
-
--- Sells a specific item
-function SellItem(item, price, playerItemCount, npcConfig, npc, closeMenu)
-    if playerItemCount == 1 then
-        TriggerServerEvent('npc:sellItem', item, 1, price)
-        lib.notify({
-            title = Config.Texts.SuccessSellSingle,
-            type = 'success',
-        })
-    else
-        local input = lib.inputDialog(Config.Texts.QuantityPrompt, {
-            {
-                type = 'slider',
-                label = Config.Texts.QuantityPrompt,
-                min = 1,
-                max = playerItemCount,
-                default = playerItemCount
-            }
-        })
-
-        if input then
-            local amountToSell = tonumber(input[1])
-            if amountToSell and amountToSell > 0 and amountToSell <= playerItemCount then
-                TriggerServerEvent('npc:sellItem', item, amountToSell, price)
-                lib.notify({
-                    title = Config.Texts.SuccessSellMultiple,
-                    type = 'success',
-                })
-            else
-                lib.notify({
-                    title = Config.Texts.InvalidAmount,
-                    type = 'error',
-                })
-            end
-        end
-    end
-
-    if closeMenu then
-        lib.hideContext()
-    else
-        SetTimeout(100, function()
-            OpenSellMenu(npcConfig, npc)
-        end)
+function DisableCamera()
+    if cam then
+        DestroyCam(cam, false)
+        RenderScriptCams(false, false, 0, true, false)
+        cam = nil
     end
 end
 
--- Sells all available items
-function SellAllItems(npcConfig)
-    for _, itemConfig in pairs(npcConfig.sellItems) do
-        local playerItemCount = exports.ox_inventory:GetItemCount(itemConfig.item)
-        if playerItemCount > 0 then
-            TriggerServerEvent('npc:sellItem', itemConfig.item, playerItemCount, itemConfig.price)
-        end
+function FocusOnNPC(npc)
+    local playerPed = PlayerPedId()
+    local playerCoords = GetEntityCoords(playerPed)
+    local x, y, z = table.unpack(GetEntityCoords(npc))
+    local heading = GetEntityHeading(npc)
+
+    local frontX = x - 1.0 * math.sin(math.rad(heading))
+    local frontY = y + 1.0 * math.cos(math.rad(heading))
+    local camZ = z + 0.7
+
+    cam = CreateCam("DEFAULT_SCRIPTED_CAMERA", true)
+
+    SetCamCoord(cam, playerCoords.x, playerCoords.y, playerCoords.z + 0.7)
+    PointCamAtCoord(cam, x, y, z + 0.65)
+
+    SetCamActive(cam, true)
+    RenderScriptCams(true, false, 0, true, false)
+
+    local duration = 500
+    local startTime = GetGameTimer()
+
+    while GetGameTimer() - startTime < duration do
+        local progress = (GetGameTimer() - startTime) / duration
+
+        local newX = playerCoords.x + (frontX - playerCoords.x) * progress
+        local newY = playerCoords.y + (frontY - playerCoords.y) * progress
+        local newZ = playerCoords.z + 0.7 + (camZ - (playerCoords.z + 0.7)) * progress
+
+        SetCamCoord(cam, newX, newY, newZ)
+        Wait(0)
     end
 
-    lib.notify({
-        title = Config.Texts.SuccessSellAll,
-        type = 'success',
-    })
+    SetCamCoord(cam, frontX, frontY, camZ)
+    PointCamAtCoord(cam, x, y, z + 0.65)
+end
 
-    lib.hideContext()
-    CloseMenuAndDisableCamera()
+function NPCSpeak(npc)
+    PlayAmbientSpeech1(npc, "GENERIC_HI", "SPEECH_PARAMS_FORCE")
 end
