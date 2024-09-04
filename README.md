@@ -1,6 +1,6 @@
 # NPC Item Selling Script
 
-This script enables players to interact with NPCs to sell various items in your FiveM server. You can place NPCs at specific locations, customize their animations, set dynamic prices, and ensure secure transactions.
+This script enables players to interact with NPCs to sell various items. You can place NPCs at specific locations, customize their animations, set dynamic prices, and ensure secure transactions.
 
 ## Features
 
@@ -14,7 +14,7 @@ This script enables players to interact with NPCs to sell various items in your 
 
 ## Requirements
 
-Ensure the following dependencies are installed and running on your FiveM server:
+Ensure the following dependencies are installed and running:
 
 - **[ox_target](https://github.com/overextended/ox_target):** Used for targeting and interacting with NPCs.
 - **[ox_inventory](https://github.com/overextended/ox_inventory):** Manages player inventories and items.
