@@ -2,6 +2,7 @@ local npcs = {}
 local cam = nil
 local isCheckingDeath = false
 local isCameraFocused = false
+local hasNpcSpoken = {}
 
 -- Close the menu and disable the camera
 function CloseMenuAndDisableCamera()
@@ -12,6 +13,7 @@ function CloseMenuAndDisableCamera()
     DisableCamera()
     isCheckingDeath = false
     isCameraFocused = false
+    hasNpcSpoken = {}
 end
 
 -- Start checking if the player is dead or dying
@@ -109,15 +111,30 @@ end)
 
 -- Open the sell menu and focus the camera on the NPC
 function OpenSellMenu(npcConfig, npc)
+    -- Ask the server if the player can interact based on job and rank
+    TriggerServerEvent('npc:checkPlayerJob', npcConfig.name)
+end
+
+-- Event to allow the player to open the sell menu if the job check passes
+RegisterNetEvent('npc:allowOpenSellMenu')
+AddEventHandler('npc:allowOpenSellMenu', function(npcConfigName)
+    local npcConfig = Config.NPCs[npcConfigName]
+    local npc = npcs[npcConfig.name]
+
     if not isCameraFocused then
         FocusOnNPC(npc)
         isCameraFocused = true
     end
-    NPCSpeak(npc)
-    StartDeathCheck()
 
+    -- Check if NPC has already spoken
+    if not hasNpcSpoken[npcConfig.name] then
+        NPCSpeak(npc)
+        hasNpcSpoken[npcConfig.name] = true
+    end
+
+    StartDeathCheck()
     TriggerServerEvent('npc:requestSellMenu', npcConfig.name)
-end
+end)
 
 RegisterNetEvent('npc:openSellMenu')
 AddEventHandler('npc:openSellMenu', function(npcName, sellItems)

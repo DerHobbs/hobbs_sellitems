@@ -38,9 +38,48 @@ local function sendToDiscord(playerName, source, itemList, npcName, totalSellPri
     }
 
     PerformHttpRequest(discordWebhookUrl, function(err, text, headers)
-        print("Webhook Response: ", err, text)
+        --print("Webhook Response: ", err, text)
     end, 'POST', json.encode(message), { ['Content-Type'] = 'application/json' })
 end
+
+RegisterServerEvent('npc:checkPlayerJob')
+AddEventHandler('npc:checkPlayerJob', function(npcName)
+    local src = source
+    local Player = qbx:GetPlayer(src)
+    local npcConfig = Config.NPCs[npcName]
+
+    local playerJob = Player.PlayerData.job.name
+
+    -- Check if the NPC has a required job and grade
+    if npcConfig.requiredJob and npcConfig.requiredJob ~= false then
+        local playerGrade = Player.PlayerData.job.grade.level
+
+        -- Check if the player's job matches and if the player's grade is equal or higher
+        if playerJob ~= npcConfig.requiredJob.name or playerGrade < npcConfig.requiredJob.grade then
+            TriggerClientEvent('ox_lib:notify', src, {
+                title = Config.Texts.AccessDeniedTitle,
+                description = Config.Texts.AccessDeniedDescription,
+                type = 'error'
+            })
+            return
+        end
+    elseif npcConfig.blacklistedJobs then
+        -- Check if the player's job is blacklisted
+        for _, blacklistedJob in ipairs(npcConfig.blacklistedJobs) do
+            if playerJob == blacklistedJob then
+                TriggerClientEvent('ox_lib:notify', src, {
+                    title = Config.Texts.BlacklistedJobTitle,
+                    description = Config.Texts.BlacklistedJobDescription,
+                    type = 'error'
+                })
+                return
+            end
+        end
+    end
+
+    -- If no job is required, and the player is not blacklisted, allow access
+    TriggerClientEvent('npc:allowOpenSellMenu', src, npcName)
+end)
 
 -- Initialize NPC data with prices and set up periodic price resets
 local function InitializeNPCData()
