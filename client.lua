@@ -1,4 +1,5 @@
 local npcs = {}
+local npcBlips = {}
 local cam = nil
 local isCheckingDeath = false
 local isCameraFocused = false
@@ -42,22 +43,10 @@ end
 
 -- Create an NPC with a blip and interaction options
 function CreateNPC(npcConfig)
-    if npcConfig.blip.enabled then
-        local blip = AddBlipForCoord(npcConfig.position.x, npcConfig.position.y, npcConfig.position.z)
-        SetBlipSprite(blip, npcConfig.blip.blipId)
-        SetBlipDisplay(blip, 4)
-        SetBlipScale(blip, npcConfig.blip.scale)
-        SetBlipColour(blip, npcConfig.blip.color)
-        SetBlipAsShortRange(blip, true)
-        BeginTextCommandSetBlipName("STRING")
-        AddTextComponentString(npcConfig.blip.name)
-        EndTextCommandSetBlipName(blip)
-    end
-
     local pedModel = npcConfig.model
     RequestModel(GetHashKey(pedModel))
     while not HasModelLoaded(GetHashKey(pedModel)) do
-        Wait(1)
+        Wait(0)
     end
 
     local npc = CreatePed(4, GetHashKey(pedModel), npcConfig.position.x, npcConfig.position.y, npcConfig.position.z - 1.0, npcConfig.heading, false, true)
@@ -70,7 +59,7 @@ function CreateNPC(npcConfig)
     exports.ox_target:addLocalEntity(npc, {
         {
             name = 'npc_sell_items_' .. npcConfig.name,
-            label = Config.Texts.TargetMenuTitle,
+            label = locale('sell_items'),
             icon = 'fa-solid fa-sack-dollar',
             onSelect = function()
                 OpenSellMenu(npcConfig, npc)
@@ -81,7 +70,24 @@ function CreateNPC(npcConfig)
     npcs[npcConfig.name] = npc
 end
 
--- Delete an NPC
+-- Create blip outside NPC spawn logic to ensure it's always visible
+function CreateNPCBlip(npcConfig)
+    if npcConfig.blip.enabled and not npcBlips[npcConfig.name] then
+        local blip = AddBlipForCoord(npcConfig.position.x, npcConfig.position.y, npcConfig.position.z)
+        SetBlipSprite(blip, npcConfig.blip.blipId)
+        SetBlipDisplay(blip, 4)
+        SetBlipScale(blip, npcConfig.blip.scale)
+        SetBlipColour(blip, npcConfig.blip.color)
+        SetBlipAsShortRange(blip, true)
+        BeginTextCommandSetBlipName("STRING")
+        AddTextComponentString(npcConfig.blip.name)
+        EndTextCommandSetBlipName(blip)
+        
+        npcBlips[npcConfig.name] = blip
+    end
+end
+
+-- Delete an NPC but not the blip
 function DeleteNPC(npcConfig)
     if npcs[npcConfig.name] then
         DeleteEntity(npcs[npcConfig.name])
@@ -91,6 +97,11 @@ end
 
 -- Monitor player distance to NPCs and manage NPC spawn/despawn
 Citizen.CreateThread(function()
+    for _, npcConfig in pairs(Config.NPCs) do
+        -- Create blip at the start
+        CreateNPCBlip(npcConfig)
+    end
+
     while true do
         local playerPed = PlayerPedId()
         local playerPos = GetEntityCoords(playerPed)
@@ -142,7 +153,7 @@ AddEventHandler('npc:openSellMenu', function(npcName, sellItems)
     local hasSellableItems = false
 
     table.insert(options, {
-        title = Config.Texts.MenuHeader,
+        title = locale('menu_header'),
         description = "",
         icon = 'fa-solid fa-info-circle',
         disabled = true
@@ -159,7 +170,7 @@ AddEventHandler('npc:openSellMenu', function(npcName, sellItems)
 
         table.insert(options, {
             title = itemLabel .. ' (' .. playerItemCount .. 'x)',
-            description = Config.Texts.CurrentPrice .. price,
+            description = locale('current_price') .. price,
             icon = 'nui://ox_inventory/web/images/' .. item.name .. '.png',
             disabled = playerItemCount == 0,
             onSelect = function()
@@ -169,10 +180,10 @@ AddEventHandler('npc:openSellMenu', function(npcName, sellItems)
                         TriggerServerEvent('npc:requestSellMenu', npcName)
                     end)
                 else
-                    local input = lib.inputDialog(Config.Texts.QuantityPrompt, {
+                    local input = lib.inputDialog(locale('quantity_prompt'), {
                         {
                             type = 'slider',
-                            label = Config.Texts.QuantityPrompt,
+                            label = locale('quantity_prompt'),
                             min = 1,
                             max = playerItemCount,
                             default = playerItemCount
@@ -188,7 +199,7 @@ AddEventHandler('npc:openSellMenu', function(npcName, sellItems)
                             end)
                         else
                             lib.notify({
-                                title = Config.Texts.InvalidAmount,
+                                title = locale('invalid_amount'),
                                 type = 'error',
                             })
                         end
@@ -201,14 +212,14 @@ AddEventHandler('npc:openSellMenu', function(npcName, sellItems)
     end
 
     table.insert(options, 2, {
-        title = Config.Texts.SellAllTitle,
-        description = Config.Texts.SellAllDescription,
+        title = locale('sell_all_items'),
+        description = locale('sell_all_description'),
         icon = 'nui://ox_inventory/web/images/money.png',
         disabled = not hasSellableItems,
         onSelect = function()
             local confirmOptions = {
                 {
-                    title = Config.Texts.ConfirmSellYes,
+                    title = locale('confirm_sell_yes'),
                     icon = 'fa-solid fa-check',
                     onSelect = function()
                         TriggerServerEvent('npc:sellAllItems', npcName)
@@ -216,11 +227,11 @@ AddEventHandler('npc:openSellMenu', function(npcName, sellItems)
                     end
                 },
                 {
-                    title = Config.Texts.ConfirmSellNo,
+                    title = locale('confirm_sell_no'),
                     icon = 'fa-solid fa-times',
                     onSelect = function()
                         lib.notify({
-                            title = Config.Texts.SellCancelled,
+                            title = locale('sell_cancelled'),
                             type = 'error',
                         })
                         CloseMenuAndDisableCamera()
@@ -230,7 +241,7 @@ AddEventHandler('npc:openSellMenu', function(npcName, sellItems)
 
             lib.registerContext({
                 id = 'confirm_sell_all',
-                title = Config.Texts.ConfirmSellTitle,
+                title = locale('confirm_sell'),
                 options = confirmOptions,
                 onExit = function()
                     CloseMenuAndDisableCamera()
@@ -243,7 +254,7 @@ AddEventHandler('npc:openSellMenu', function(npcName, sellItems)
 
     lib.registerContext({
         id = 'sell_items_menu_' .. npcName,
-        title = Config.Texts.ContextMenuTitle,
+        title = locale('sell_menu'),
         options = options,
         onExit = function()
             CloseMenuAndDisableCamera()

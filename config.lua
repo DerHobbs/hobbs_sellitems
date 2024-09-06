@@ -50,30 +50,3 @@ Config.NPCs = {
         animation = "WORLD_HUMAN_CLIPBOARD"
     }
 }
-
-Config.Texts = {  -- Texts used for menu and notifications
-    TargetMenuTitle = "Sell Items",
-    ContextMenuTitle = "Sell Menu",
-    SellAllTitle = "Sell All Available Items?",
-    SellAllDescription = "Sell all your available items!",
-    CurrentPrice = "Current Price: $",
-    QuantityPrompt = "How many would you like to sell?",
-    InvalidAmount = "Invalid amount.",
-    SuccessSellAll = "All available items have been sold.",
-    MenuHeader = "Select an item to sell",
-    NoItemsToSell = "No items available to sell.",
-    ConfirmSellTitle = "Are you sure?",
-    ConfirmSellYes = "Yes, sell everything",
-    ConfirmSellNo = "No, cancel",
-    SellCancelled = "Sale cancelled.",
-    SellSuccessTitle = "Sale Successful",
-    SellSuccessMessage = "You sold %d %s for $%d.",
-    SellErrorTitle = "Sale Failed",
-    SellErrorMessage = "There was an error selling the items.",
-    AccessDeniedTitle = "Access Denied",
-    AccessDeniedDescription = "You don't have the required job or rank to interact with this NPC.",
-    BlacklistedJobTitle = "I have nothing to say to you",
-    BlacklistedJobDescription = "I have nothing to say to you, you cops!",
-    AccessDeniedGangTitle = "Access Denied",
-    AccessDeniedGangDescription = "You don't have the required gang or rank to interact with this NPC.",
-}
